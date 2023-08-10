@@ -1,0 +1,31 @@
+<h2>Text & Variables</h2>
+<form onsubmit="onSubmit(event)">
+	<label for="fileLink">Figma file URL</label>
+	<input type="url" id="fileLink" placeholder="https://figma.com/file/:id" />
+	<button type="submit" name="push_button">Push texts</button>
+	<button type="submit" name="pull_button">Pull texts</button>
+</form>
+<script>
+	function onmessage(event) {}
+
+	function pushTexts(e) {
+		e.preventDefault();
+		const fileUrl = e.target[0].value;
+		const message = {
+			action: "PUSH_DATA",
+			data: { promt: fileUrl },
+		};
+		parent.postMessage({ pluginMessage: message }, "*");
+	}
+
+	function onSubmit(e) {
+		e.preventDefault();
+		const submitter = e.submitter.name;
+		const fileUrl = e.target[0].value;
+		const message = {
+			action: submitter === "push_button" ? "PUSH_DATA" : "PULL_DATA",
+			data: { promt: fileUrl },
+		};
+		parent.postMessage({ pluginMessage: message }, "*");
+	}
+</script>
