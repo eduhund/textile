@@ -1,31 +1,160 @@
-<h2>Text & Variables</h2>
-<form onsubmit="onSubmit(event)">
-	<label for="fileLink">Figma file URL</label>
-	<input type="url" id="fileLink" placeholder="https://figma.com/file/:id" />
-	<button type="submit" name="push_button">Push texts</button>
-	<button type="submit" name="pull_button">Pull texts</button>
-</form>
-<script>
-	function onmessage(event) {}
+<body>
+	<h3>Orientation</h3>
+	<ol>
+		<li>Press "Push texts"</li>
+		<li>Send the file ID to your co-worker (click on it to copy)</li>
+		<li>Wait all the side work is done and press "Pull texts"</li>
+	</ol>
+	<em
+		>Please try not to work with text frames until you return the texts to the
+		project. If you replace them, new data may not be merged correctly.</em
+	>
+	<p class="fileId">
+		File ID: <span id="fileId" onclick="onIdClick(event)"></span>
+	</p>
+	<div class="actions">
+		<button id="push_texts" name="push_button" onclick="fetchData(event)">
+			Push texts
+		</button>
+		<button id="pull_texts" name="pull_button" onclick="fetchData(event)">
+			Pull texts
+		</button>
+	</div>
+</body>
 
-	function pushTexts(e) {
-		e.preventDefault();
-		const fileUrl = e.target[0].value;
+<style>
+	html {
+		font-family: Arial, Helvetica, sans-serif;
+	}
+
+	body {
+		margin: 0;
+		padding: 12px 8px;
+	}
+
+	.actions {
+		display: flex;
+		gap: 16px;
+	}
+
+	ol {
+		padding-left: 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	em {
+		font-size: 14px;
+		color: dimgray;
+	}
+
+	button {
+		padding: 4px 12px;
+		min-width: 120px;
+		font-size: 16px;
+		line-height: 22px;
+		vertical-align: middle;
+		color: #ff6633;
+		background-color: #ffffff;
+		border-radius: 0;
+		border: 1px solid #ff6633;
+	}
+
+	button:hover {
+		cursor: pointer;
+		color: #ffffff;
+		background-color: #ff6633;
+	}
+
+	button:disabled {
+		cursor: default;
+		background-color: #ffffff;
+		color: rgba(255, 102, 51, 0.4);
+		border-color: rgba(255, 102, 51, 0.4);
+	}
+
+	.fileId {
+		font-size: 16px;
+		line-height: 20px;
+	}
+
+	#fileId {
+		color: dodgerblue;
+		font-family: monospace;
+		border-bottom: 1px solid dodgerblue;
+		cursor: pointer;
+	}
+</style>
+<script>
+	function copyToClipboard(fileId) {
+		const textArea = document.createElement("textarea");
+		textArea.style = {
+			top: "0",
+			left: "0",
+			position: "fixed",
+		};
+		textArea.value = fileId;
+
+		document.body.appendChild(textArea);
+		textArea.focus();
+		textArea.select();
+
+		try {
+			document.execCommand("copy");
+		} catch (err) {
+			throw new Error("Fail with the copying to clipboard!");
+		} finally {
+			document.body.removeChild(textArea);
+		}
+	}
+	onmessage = ({ data }) => {
+		console.log(data?.pluginMessage);
+		const { action, fileId, initAction } = data?.pluginMessage;
+		switch (action) {
+			case "SEND_ID":
+				document.querySelector("#fileId").innerText = fileId;
+
+				copyToClipboard(fileId);
+
+				const message = {
+					action: "COPY_ID",
+				};
+				parent.postMessage({ pluginMessage: message }, "*");
+				break;
+
+			case "FETCH_RESPONSE":
+				const initName = initAction.toLowerCase();
+				const button = document.querySelector("#" + initAction);
+				let name = initName.charAt(0).toUpperCase() + initName.slice(1);
+				name = name.replace("_", " ");
+				button.disabled = false;
+				button.innerText = name;
+		}
+	};
+
+	function onIdClick(event) {
+		const fileId = event.target.innerText;
+
+		copyToClipboard(fileId);
+
 		const message = {
-			action: "PUSH_DATA",
-			data: { promt: fileUrl },
+			action: "COPY_ID",
 		};
 		parent.postMessage({ pluginMessage: message }, "*");
 	}
 
-	function onSubmit(e) {
+	function fetchData(e) {
 		e.preventDefault();
-		const submitter = e.submitter.name;
-		const fileUrl = e.target[0].value;
+		const { id = "" } = e?.target;
+		const action = id.toUpperCase();
+		const button = document.querySelector("#" + id);
+
 		const message = {
-			action: submitter === "push_button" ? "PUSH_DATA" : "PULL_DATA",
-			data: { promt: fileUrl },
+			action,
 		};
 		parent.postMessage({ pluginMessage: message }, "*");
+		button.disabled = true;
+		button.innerText = "☕︎ Working...";
 	}
 </script>

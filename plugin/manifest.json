@@ -1,5 +1,5 @@
 {
-	"name": "Figma2Sheets",
+	"name": "FigmaSheets",
 	"id": "1254900225011241583",
 	"api": "1.0.0",
 	"main": "code.js",
@@ -9,5 +9,6 @@
 	"ui": "ui.html",
 	"networkAccess": {
 		"allowedDomains": ["https://apps.eduhund.com"]
-	}
+	},
+	"enablePrivatePluginApi": true
 }

@@ -1,19 +1,15 @@
-figma.showUI(__html__);
+figma.showUI(__html__, { width: 300, height: 350 });
+
+const fileId = figma.fileKey;
+
+figma.ui.postMessage({ action: "SEND_ID", fileId });
 
 figma.ui.onmessage = async (msg: any) => {
-	const { action, data } = msg;
-
-	const { promt } = data;
-	let fileId = "";
-
-	if (promt.startsWith("https://")) {
-		fileId = promt.split("/")[4];
-	} else {
-		fileId = promt;
-	}
+	const { action } = msg;
+	console.log(msg);
 
 	const page = getCurrentPage();
-	if (action === "PUSH_DATA") {
+	if (action === "PUSH_TEXTS") {
 		const response = {
 			fileId,
 			fileName: figma.root.name,
@@ -37,9 +33,11 @@ figma.ui.onmessage = async (msg: any) => {
 		if (OK) {
 			figma.notify("Texts export sucessfully.");
 		}
+
+		figma.ui.postMessage({ action: "FETCH_RESPONSE", initAction: action });
 	}
 
-	if (action === "PULL_DATA") {
+	if (action === "PULL_TEXTS") {
 		const { OK, data, error } = await fetch(
 			`https://apps.eduhund.com/f2s/api/pullData?fileId=${fileId}`,
 			{
@@ -52,23 +50,26 @@ figma.ui.onmessage = async (msg: any) => {
 		).then((response) => response.json());
 
 		if (OK) {
-			await figma.loadFontAsync({ family: "Inter", style: "Black" });
-			await figma.loadFontAsync({
-				family: "Font Awesome 5 Free",
-				style: "Solid",
-			});
-			await figma.loadFontAsync({ family: "Inter", style: "Regular" });
-
 			for (const frame of data.frames || []) {
 				const frameNode: any = figma.getNodeById(frame?.id);
 				frameNode.locked = false;
 				for (const text of frame.texts || []) {
 					const node: any = figma.getNodeById(text?.id);
+					await Promise.all(
+						node
+							.getRangeAllFontNames(0, node.characters.length)
+							.map(figma.loadFontAsync)
+					);
 					node.characters = text.text;
 				}
 			}
 			figma.notify("New texts imported!");
 		}
+		figma.ui.postMessage({ action: "FETCH_RESPONSE", initAction: action });
+	}
+
+	if (action === "COPY_ID") {
+		figma.notify("File ID has been copied to the clipboard");
 	}
 };
 
@@ -89,7 +90,6 @@ function isNumber(text: string) {
 function provideTexts(textNodes: TextNode[]) {
 	const textArray: any[] = [];
 	for (const item of textNodes) {
-		console.log(item);
 		const { id, locked, visible, characters } = item;
 		if (characters.length < 2 || locked || !isNumber(characters)) continue;
 		const text: any = {
