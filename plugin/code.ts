@@ -4,7 +4,7 @@ const fileId = figma.fileKey;
 
 async function createCommentBadge(id: number) {
 	const indicator = figma.createText();
-	const frame: any = figma.createFrame();
+	const frame = figma.createFrame();
 	frame.name = `Comment #${id}`;
 	frame.appendChild(indicator);
 	const font = { family: "Inter", style: "Regular" };
@@ -49,7 +49,7 @@ async function createCommentText(content: string, id: number) {
 	text.lineHeight = { value: 16, unit: "PIXELS" };
 	text.characters = content;
 
-	const frame: any = figma.createFrame();
+	const frame = figma.createFrame();
 	frame.name = `Comment #${id}`;
 	frame.appendChild(commentNumber);
 	frame.appendChild(text);
@@ -89,14 +89,14 @@ async function frameComments(comments: FrameNode[]) {
 	header.lineHeight = { value: 36, unit: "PIXELS" };
 	header.characters = "Editor's comments";
 
-	const container: any = figma.createFrame();
+	const container = figma.createFrame();
 	container.name = "CommentsContainer";
 	comments.forEach((comment) => container.appendChild(comment));
 	container.layoutMode = "VERTICAL";
 	container.layoutSizingHorizontal = "HUG";
 	container.itemSpacing = 8;
 
-	const frame: any = figma.createFrame();
+	const frame = figma.createFrame();
 	frame.name = "CommentsList";
 	frame.appendChild(header);
 	frame.appendChild(container);
