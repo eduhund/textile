@@ -2,6 +2,116 @@ figma.showUI(__html__, { width: 300, height: 350 });
 
 const fileId = figma.fileKey;
 
+async function createCommentBadge(id: number) {
+	const indicator = figma.createText();
+	const frame: any = figma.createFrame();
+	frame.name = `Comment #${id}`;
+	frame.appendChild(indicator);
+	const font = { family: "Inter", style: "Regular" };
+	await figma.loadFontAsync(font);
+	indicator.fontName = font;
+	indicator.fontSize = 14;
+	indicator.lineHeight = { value: 16, unit: "PIXELS" };
+	indicator.characters = String(id);
+	indicator.fills = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }];
+	frame.fills = [{ type: "SOLID", color: { r: 1, g: 0.4, b: 0.2 } }];
+
+	frame.layoutMode = "HORIZONTAL";
+	frame.layoutSizingHorizontal = "HUG";
+	frame.layoutSizingVertical = "HUG";
+	frame.primaryAxisAlignItems = "CENTER";
+
+	frame.minWidth = 32;
+	frame.paddingTop = 4;
+	frame.paddingBottom = 4;
+	frame.paddingLeft = 4;
+	frame.paddingRight = 4;
+	frame.cornerRadius = 8;
+	frame.bottomRightRadius = 2;
+	return frame;
+}
+
+async function createCommentText(content: string, id: number) {
+	const font1 = { family: "Inter", style: "Regular" };
+	const font2 = { family: "Inter", style: "Bold" };
+	await figma.loadFontAsync(font1);
+	await figma.loadFontAsync(font2);
+
+	const commentNumber = figma.createText();
+	commentNumber.fontName = font2;
+	commentNumber.fontSize = 14;
+	commentNumber.lineHeight = { value: 16, unit: "PIXELS" };
+	commentNumber.characters = String(id);
+
+	const text = figma.createText();
+	text.fontName = font1;
+	text.fontSize = 14;
+	text.lineHeight = { value: 16, unit: "PIXELS" };
+	text.characters = content;
+
+	const frame: any = figma.createFrame();
+	frame.name = `Comment #${id}`;
+	frame.appendChild(commentNumber);
+	frame.appendChild(text);
+
+	frame.layoutMode = "HORIZONTAL";
+	frame.layoutSizingVertical = "HUG";
+	frame.itemSpacing = 8;
+
+	return frame;
+}
+
+async function updateTextItem({ id, text }: any) {
+	const node: any = figma.getNodeById(id);
+	await Promise.all(
+		node
+			.getRangeAllFontNames(0, node.characters.length)
+			.map(figma.loadFontAsync)
+	);
+	node.characters = text;
+
+	return node;
+}
+
+function groupIndicators(indicators: FrameNode[]) {
+	const indicatorsGroup = figma.group(indicators, figma.currentPage);
+	indicatorsGroup.name = "CommentsBadges";
+	indicatorsGroup.locked = true;
+}
+
+async function frameComments(comments: FrameNode[]) {
+	const font = { family: "Montserrat", style: "Medium" };
+	await figma.loadFontAsync(font);
+
+	const header = figma.createText();
+	header.fontName = font;
+	header.fontSize = 32;
+	header.lineHeight = { value: 36, unit: "PIXELS" };
+	header.characters = "Editor's comments";
+
+	const container: any = figma.createFrame();
+	container.name = "CommentsContainer";
+	comments.forEach((comment) => container.appendChild(comment));
+	container.layoutMode = "VERTICAL";
+	container.layoutSizingHorizontal = "HUG";
+	container.itemSpacing = 8;
+
+	const frame: any = figma.createFrame();
+	frame.name = "CommentsList";
+	frame.appendChild(header);
+	frame.appendChild(container);
+	frame.layoutMode = "VERTICAL";
+	frame.layoutSizingHorizontal = "HUG";
+	frame.itemSpacing = 16;
+
+	frame.paddingTop = 20;
+	frame.paddingBottom = 20;
+	frame.paddingLeft = 16;
+	frame.paddingRight = 16;
+
+	figma.viewport.scrollAndZoomIntoView([frame]);
+}
+
 figma.ui.postMessage({ action: "SEND_ID", fileId });
 
 figma.ui.onmessage = async (msg: any) => {
@@ -50,19 +160,38 @@ figma.ui.onmessage = async (msg: any) => {
 		).then((response) => response.json());
 
 		if (OK) {
+			const indicators = [];
+			const comments = [];
+			let commentCounter = 1;
+
 			for (const frame of data.frames || []) {
 				const frameNode: any = figma.getNodeById(frame?.id);
 				frameNode.locked = false;
+
 				for (const text of frame.texts || []) {
-					const node: any = figma.getNodeById(text?.id);
-					await Promise.all(
-						node
-							.getRangeAllFontNames(0, node.characters.length)
-							.map(figma.loadFontAsync)
-					);
-					node.characters = text.text;
+					const textNode = await updateTextItem(text);
+					if (text.comment && text.comment.length > 0) {
+						const commentBadge = await createCommentBadge(commentCounter);
+						const commentText = await createCommentText(
+							text.comment,
+							commentCounter
+						);
+
+						const absNode = textNode.absoluteRenderBounds;
+						const { x, y } = absNode;
+						commentBadge.x = x - commentBadge.width;
+						commentBadge.y = y - commentBadge.height;
+
+						indicators.push(commentBadge);
+						comments.push(commentText);
+						commentCounter++;
+					}
 				}
 			}
+
+			groupIndicators(indicators);
+			await frameComments(comments);
+
 			figma.notify("New texts imported!");
 		}
 		figma.ui.postMessage({ action: "FETCH_RESPONSE", initAction: action });
