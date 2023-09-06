@@ -126,8 +126,8 @@ figma.ui.onmessage = async (msg: any) => {
 			pageId: page.id,
 			pageName: page.name,
 			frames: getFramesWithText(page),
+			variables: provideVariables(),
 		};
-
 		const { OK, data, error } = await fetch(
 			"https://apps.eduhund.com/f2s/api/pushData",
 			{
@@ -216,19 +216,33 @@ function isNumber(text: string) {
 	}
 }
 
-function provideTexts(textNodes: TextNode[]) {
+function provideTexts(textNodes: any) {
 	const textArray: any[] = [];
 	for (const item of textNodes) {
-		const { id, locked, visible, characters } = item;
+		const { id, locked, visible, characters, variableConsumptionMap } = item;
+		const variableId = variableConsumptionMap["TEXT_DATA"]?.value;
 		if (characters.length < 2 || locked || !isNumber(characters)) continue;
 		const text: any = {
 			id,
 			isHide: visible,
+			variableId,
 			text: characters,
 		};
 		textArray.push(text);
 	}
 	return textArray;
+}
+
+function provideVariables() {
+	const variables = figma.variables.getLocalVariables("STRING");
+	const variablesArray = variables.map(({ id, name, valuesByMode }) => {
+		return {
+			id,
+			name,
+			texts: Object.keys(valuesByMode).map((key) => valuesByMode[key]),
+		};
+	});
+	return variablesArray;
 }
 
 function getFramesWithText(page: PageNode) {
