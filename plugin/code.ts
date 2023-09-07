@@ -164,41 +164,43 @@ figma.ui.onmessage = async (msg: any) => {
 			const comments = [];
 			let commentCounter = 1;
 
-			for (const frame of data.frames || []) {
-				const frameNode: any = figma.getNodeById(frame?.id);
-				frameNode.locked = false;
+			for (const page of data.pages || []) {
+				for (const frame of page.frames || []) {
+					const frameNode: any = figma.getNodeById(frame?.id);
+					frameNode.locked = false;
 
-				for (const text of frame.texts || []) {
-					const textNode = await updateTextItem(text);
-					if (text.comment && text.comment.length > 0) {
-						const commentBadge = await createCommentBadge(commentCounter);
-						const commentText = await createCommentText(
-							text.comment,
-							commentCounter
-						);
+					for (const text of frame.texts || []) {
+						const textNode = await updateTextItem(text);
+						if (text.comment && text.comment.length > 0) {
+							const commentBadge = await createCommentBadge(commentCounter);
+							const commentText = await createCommentText(
+								text.comment,
+								commentCounter
+							);
 
-						const absNode = textNode.absoluteRenderBounds;
-						const { x, y } = absNode;
-						commentBadge.x = x - commentBadge.width;
-						commentBadge.y = y - commentBadge.height;
+							const absNode = textNode.absoluteRenderBounds;
+							const { x, y } = absNode;
+							commentBadge.x = x - commentBadge.width;
+							commentBadge.y = y - commentBadge.height;
 
-						indicators.push(commentBadge);
-						comments.push(commentText);
-						commentCounter++;
+							indicators.push(commentBadge);
+							comments.push(commentText);
+							commentCounter++;
+						}
 					}
 				}
+
+				groupIndicators(indicators);
+				await frameComments(comments);
+
+				figma.notify("New texts imported!");
 			}
-
-			groupIndicators(indicators);
-			await frameComments(comments);
-
-			figma.notify("New texts imported!");
+			figma.ui.postMessage({ action: "FETCH_RESPONSE", initAction: action });
 		}
-		figma.ui.postMessage({ action: "FETCH_RESPONSE", initAction: action });
-	}
 
-	if (action === "COPY_ID") {
-		figma.notify("File ID has been copied to the clipboard");
+		if (action === "COPY_ID") {
+			figma.notify("File ID has been copied to the clipboard");
+		}
 	}
 };
 

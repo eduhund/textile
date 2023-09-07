@@ -1,6 +1,6 @@
 {
-	"name": "figmasheet",
-	"version": "0.2.1",
+	"name": "textile",
+	"version": "0.2.2",
 	"description": "Your Figma Plugin",
 	"main": "code.js",
 	"scripts": {
