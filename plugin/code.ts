@@ -164,6 +164,15 @@ figma.ui.onmessage = async (msg: any) => {
 			const comments = [];
 			let commentCounter = 1;
 
+			for (const { id, texts } of data.variables || []) {
+				const figmaVariable: any = figma.variables.getVariableById(id) || {};
+				Object.keys(figmaVariable.valuesByMode).forEach((key, i) => {
+					if (texts[i]) {
+						figmaVariable.setValueForMode(key, texts[i]);
+					}
+				});
+			}
+
 			for (const page of data.pages || []) {
 				for (const frame of page.frames || []) {
 					const frameNode: any = figma.getNodeById(frame?.id);
@@ -190,8 +199,10 @@ figma.ui.onmessage = async (msg: any) => {
 					}
 				}
 
-				groupIndicators(indicators);
-				await frameComments(comments);
+				if (indicators.length) {
+					groupIndicators(indicators);
+					await frameComments(comments);
+				}
 
 				figma.notify("New texts imported!");
 			}
