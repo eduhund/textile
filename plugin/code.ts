@@ -149,7 +149,7 @@ figma.ui.onmessage = async (msg: any) => {
 
 	if (action === "PULL_TEXTS") {
 		const { OK, data, error } = await fetch(
-			`https://apps.eduhund.com/f2s/api/pullData?fileId=${fileId}`,
+			`https://apps.eduhund.com/f2s/api/pullData?fileId=${fileId}&pageId=${page.id}`,
 			{
 				method: "GET",
 				headers: {
