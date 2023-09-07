@@ -13,8 +13,12 @@ const { getTexts } = require("../../services/mongo/actions");
  */
 async function pullData(req, res, next) {
 	try {
-		const { data } = req;
-		const content = await getTexts(data);
+		const { fileId, pageId } = req.data;
+		const content = await getTexts(fileId);
+		if (pageId) {
+			content.pages = [content.pages[pageId] || {}];
+		}
+
 		next({ code: 0, content });
 		return content;
 	} catch (e) {

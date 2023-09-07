@@ -1,6 +1,6 @@
 const DB = require("../../requests");
 
-async function getTexts({ fileId, pageId }) {
+async function getTexts(fileId) {
 	return DB.getOne("texts", {
 		query: {
 			fileId,

@@ -14,7 +14,18 @@ const { setTexts } = require("../../services/mongo/actions");
 async function pushData(req, res, next) {
 	try {
 		const { data } = req;
-		await setTexts(data);
+		const { fileId, fileName, pageId, pageName, frames, variables } = data;
+		const setData = {
+			fileId,
+			fileName,
+			[`pages.${pageId}`]: {
+				pageId,
+				pageName,
+				frames,
+				variables,
+			},
+		};
+		await setTexts(data.fileId, setData);
 		next({});
 		return data;
 	} catch (e) {
