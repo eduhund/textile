@@ -17,6 +17,8 @@ async function getData(req, res, next) {
 		const content = await getTexts(fileId);
 		if (pageId) {
 			content.pages = [content.pages[pageId] || {}];
+		} else {
+			content.pages = Object.values(content.pages || [])
 		}
 		next({ code: 0, content });
 		return content;

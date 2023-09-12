@@ -22,8 +22,8 @@ async function setData(req, res, next) {
 				pageId,
 				pageName,
 				frames,
-				variables,
 			},
+			variables,
 		};
 		await setTexts(data.fileId, setData);
 		next({});
