@@ -14,15 +14,17 @@ const { setTexts } = require("../../services/mongo/actions");
 async function setData(req, res, next) {
 	try {
 		const { data } = req;
-		const { fileId, fileName, pageId, pageName, frames, variables } = data;
+		const { fileId, fileName, pages, variables } = data;
+
+		const pagesList = {}
+
+		for (const page of pages) {
+			pagesList[page.id] = page
+		}
 		const setData = {
 			fileId,
 			fileName,
-			[`pages.${pageId}`]: {
-				pageId,
-				pageName,
-				frames,
-			},
+			pages: pagesList,
 			variables,
 		};
 		await setTexts(data.fileId, setData);
