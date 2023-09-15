@@ -19,7 +19,7 @@ async function setData(req, res, next) {
 		const pagesList = {}
 
 		for (const page of pages) {
-			pagesList[page.id] = page
+			pagesList[page.pageId] = page
 		}
 		const setData = {
 			fileId,
