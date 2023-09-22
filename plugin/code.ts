@@ -129,7 +129,7 @@ figma.ui.onmessage = async (msg: any) => {
 			variables: provideVariables(),
 		};
 		const { OK, data, error } = await fetch(
-			"https://apps.eduhund.com/f2s/api/pushData",
+			"https://textile.eduhund.com/api/pushData",
 			{
 				method: "POST",
 				headers: {
@@ -149,7 +149,7 @@ figma.ui.onmessage = async (msg: any) => {
 
 	if (action === "PULL_TEXTS") {
 		const { OK, data, error } = await fetch(
-			`https://apps.eduhund.com/f2s/api/pullData?fileId=${fileId}&pageId=${page.id}`,
+			`https://textile.eduhund.com/api/pullData?fileId=${fileId}&pageId=${page.id}`,
 			{
 				method: "GET",
 				headers: {
