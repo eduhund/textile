@@ -8,7 +8,7 @@
 	"editorType": ["figma"],
 	"ui": "ui.html",
 	"networkAccess": {
-		"allowedDomains": ["https://apps.eduhund.com"]
+		"allowedDomains": ["https://textile.eduhund.com"]
 	},
 	"enablePrivatePluginApi": true
 }

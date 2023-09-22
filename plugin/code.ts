@@ -128,90 +128,104 @@ figma.ui.onmessage = async (msg: any) => {
 			frames: getFramesWithText(page),
 			variables: provideVariables(),
 		};
-		const { OK, data, error } = await fetch(
-			"https://textile.eduhund.com/api/pushData",
-			{
-				method: "POST",
-				headers: {
-					Authorization: "sobaka",
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(response),
+		try {
+			const { OK, data, error } = await fetch(
+				"https://textile.eduhund.com/api/pushData",
+				{
+					method: "POST",
+					headers: {
+						Authorization: "sobaka",
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(response),
+				}
+			).then((response) => response.json());
+	
+			if (OK) {
+				figma.notify("Texts export sucessfully.");
+			} else {
+				figma.notify("Request failed", {error: true})
 			}
-		).then((response) => response.json());
-
-		if (OK) {
-			figma.notify("Texts export sucessfully.");
+		} catch {
+			figma.notify("Request failed", {error: true})
+		} finally {
+			figma.ui.postMessage({ action: "FETCH_RESPONSE", initAction: action });
 		}
-
-		figma.ui.postMessage({ action: "FETCH_RESPONSE", initAction: action });
 	}
 
 	if (action === "PULL_TEXTS") {
-		const { OK, data, error } = await fetch(
-			`https://textile.eduhund.com/api/pullData?fileId=${fileId}&pageId=${page.id}`,
-			{
-				method: "GET",
-				headers: {
-					Authorization: "sobaka",
-					"Content-Type": "application/json",
-				},
-			}
-		).then((response) => response.json());
-
-		if (OK) {
-			const indicators = [];
-			const comments = [];
-			let commentCounter = 1;
-
-			for (const { id, texts } of data.variables || []) {
-				const figmaVariable: any = figma.variables.getVariableById(id) || {};
-				Object.keys(figmaVariable.valuesByMode).forEach((key, i) => {
-					if (texts[i]) {
-						figmaVariable.setValueForMode(key, texts[i]);
-					}
-				});
-			}
-
-			for (const page of data.pages || []) {
-				for (const frame of page.frames || []) {
-					const frameNode: any = figma.getNodeById(frame?.id);
-					frameNode.locked = false;
-
-					for (const text of frame.texts || []) {
-						const textNode = await updateTextItem(text);
-						if (text.comment && text.comment.length > 0) {
-							const commentBadge = await createCommentBadge(commentCounter);
-							const commentText = await createCommentText(
-								text.comment,
-								commentCounter
-							);
-
-							const absNode = textNode.absoluteRenderBounds;
-							const { x, y } = absNode;
-							commentBadge.x = x - commentBadge.width;
-							commentBadge.y = y - commentBadge.height;
-
-							indicators.push(commentBadge);
-							comments.push(commentText);
-							commentCounter++;
+		try {
+			const { OK, data, error } = await fetch(
+				`https://textile.eduhund.com/api/pullData?fileId=${fileId}&pageId=${page.id}`,
+				{
+					method: "GET",
+					headers: {
+						Authorization: "sobaka",
+						"Content-Type": "application/json",
+					},
+				}
+			).then((response) => response.json());
+	
+			if (OK) {
+				const indicators = [];
+				const comments = [];
+				let commentCounter = 1;
+	
+				for (const { id, texts } of data.variables || []) {
+					const figmaVariable: any = figma.variables.getVariableById(id) || {};
+					Object.keys(figmaVariable.valuesByMode).forEach((key, i) => {
+						if (texts[i]) {
+							figmaVariable.setValueForMode(key, texts[i]);
+						}
+					});
+				}
+	
+				for (const page of data.pages || []) {
+					for (const frame of page.frames || []) {
+						const frameNode: any = figma.getNodeById(frame?.id);
+						frameNode.locked = false;
+	
+						for (const text of frame.texts || []) {
+							const textNode = await updateTextItem(text);
+							if (text.comment && text.comment.length > 0) {
+								const commentBadge = await createCommentBadge(commentCounter);
+								const commentText = await createCommentText(
+									text.comment,
+									commentCounter
+								);
+	
+								const absNode = textNode.absoluteRenderBounds;
+								const { x, y } = absNode;
+								commentBadge.x = x - commentBadge.width;
+								commentBadge.y = y - commentBadge.height;
+	
+								indicators.push(commentBadge);
+								comments.push(commentText);
+								commentCounter++;
+							}
 						}
 					}
+	
+					if (indicators.length) {
+						groupIndicators(indicators);
+						await frameComments(comments);
+					}
+	
+					figma.notify("New texts imported!");
 				}
-
-				if (indicators.length) {
-					groupIndicators(indicators);
-					await frameComments(comments);
-				}
-
-				figma.notify("New texts imported!");
+			} else {
+				figma.notify("Request failed", {error: true})
 			}
+		} catch {
+			figma.notify("Request failed", {error: true})
+		} finally {
 			figma.ui.postMessage({ action: "FETCH_RESPONSE", initAction: action });
 		}
 
-		if (action === "COPY_ID") {
-			figma.notify("File ID has been copied to the clipboard");
-		}
+	}
+
+	if (action === "COPY_ID") {
+		figma.notify("File ID has been copied to the clipboard");
 	}
 };
 
