@@ -275,17 +275,20 @@ function provideVariables() {
 function getFramesWithText(page: PageNode) {
 	const pageFrames: any = page.findChildren((n) => n.type === "FRAME");
 
-	return pageFrames.map((frame: FrameNode) => {
+	const frames = []
+	for (const frame of pageFrames) {
 		const { id, name } = frame;
 		const textNodes = frame.findAllWithCriteria({ types: ["TEXT"] });
 
-		if (textNodes.length === 0) return;
+		if (textNodes.length === 0) continue;
 
 		frame.locked = true;
-		return {
+		frames.push({
 			id,
 			name,
 			texts: provideTexts(textNodes),
-		};
-	});
+		});
+	}
+
+	return frames
 }
