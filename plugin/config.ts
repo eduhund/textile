@@ -1,0 +1,1 @@
+export const SECRET = "crqa3pqofq8buahcb47jpg9tlq5r0k2c"

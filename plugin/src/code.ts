@@ -1,3 +1,5 @@
+import { SECRET } from "../config"
+
 figma.showUI(__html__, { width: 300, height: 350 });
 
 const fileId = figma.fileKey;
@@ -116,11 +118,11 @@ figma.ui.postMessage({ action: "SEND_ID", fileId });
 
 figma.ui.onmessage = async (msg: any) => {
 	const { action } = msg;
-	console.log(msg);
 
 	const page = getCurrentPage();
 	if (action === "PUSH_TEXTS") {
 		const response = {
+			pluginId: figma.pluginId,
 			fileId,
 			fileName: figma.root.name,
 			pageId: page.id,
@@ -129,12 +131,12 @@ figma.ui.onmessage = async (msg: any) => {
 			variables: provideVariables(),
 		};
 		try {
-			const { OK, data, error } = await fetch(
+			const { OK, data, error }: any = await fetch(
 				"https://textile.eduhund.com/api/pushData",
 				{
 					method: "POST",
 					headers: {
-						Authorization: "sobaka",
+						Authorization: SECRET,
 						"Content-Type": "application/json",
 					},
 					body: JSON.stringify(response),
@@ -144,10 +146,10 @@ figma.ui.onmessage = async (msg: any) => {
 			if (OK) {
 				figma.notify("Texts export sucessfully.");
 			} else {
-				figma.notify("Request failed", {error: true})
+				figma.notify(`Request failed: ${error?.description}`, { error: true, timeout: 5000})
 			}
 		} catch {
-			figma.notify("Request failed", {error: true})
+			figma.notify("Request failed", { error: true, timeout: 5000 })
 		} finally {
 			figma.ui.postMessage({ action: "FETCH_RESPONSE", initAction: action });
 		}
@@ -155,12 +157,12 @@ figma.ui.onmessage = async (msg: any) => {
 
 	if (action === "PULL_TEXTS") {
 		try {
-			const { OK, data, error } = await fetch(
-				`https://textile.eduhund.com/api/pullData?fileId=${fileId}&pageId=${page.id}`,
+			const { OK, data, error }: any = await fetch(
+				`https://textile.eduhund.com/api/pullData?plughinId=${figma.pluginId}&fileId=${fileId}&pageId=${page.id}`,
 				{
 					method: "GET",
 					headers: {
-						Authorization: "sobaka",
+						Authorization: SECRET,
 						"Content-Type": "application/json",
 					},
 				}
@@ -214,10 +216,10 @@ figma.ui.onmessage = async (msg: any) => {
 					figma.notify("New texts imported!");
 				}
 			} else {
-				figma.notify("Request failed", {error: true})
+				figma.notify(`Request failed: ${error?.description}`, { error: true, timeout: 5000 } )
 			}
 		} catch {
-			figma.notify("Request failed", {error: true})
+			figma.notify("Request failed", { error: true, timeout: 5000 })
 		} finally {
 			figma.ui.postMessage({ action: "FETCH_RESPONSE", initAction: action });
 		}

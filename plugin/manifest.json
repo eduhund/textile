@@ -2,7 +2,7 @@
 	"name": "Textile",
 	"id": "1254900225011241583",
 	"api": "1.0.0",
-	"main": "code.js",
+	"main": "dist/code.js",
 	"capabilities": [],
 	"enableProposedApi": false,
 	"editorType": ["figma"],
