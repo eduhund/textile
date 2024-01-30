@@ -1,6 +1,6 @@
 import { SECRET } from "../config"
 
-figma.showUI(__html__, { width: 300, height: 350 });
+figma.showUI(__html__, { width: 270, height: 364 });
 
 const fileId = figma.fileKey;
 

@@ -1,5 +1,8 @@
 <body>
-	<h3>Orientation</h3>
+	<div class="heading_container">
+		<h3>Orientation</h3>
+		<a target="_blank" rel="noopener" href="https://docs.google.com/document/d/1bycZAlmCtTRd1lwokXU2FtjB-AYmKymaCTx1GvNa53o/">Full help</a>
+	</div>
 	<ol>
 		<li>Press "Push texts"</li>
 		<li>Send the file ID to your co-worker (click on it to copy)</li>
@@ -30,6 +33,15 @@
 	body {
 		margin: 0;
 		padding: 12px 8px;
+	}
+
+	h3 {
+		margin: 0;
+		margin-bottom: 8px;
+	}
+
+	a {
+		color: dodgerblue;
 	}
 
 	.actions {
@@ -72,6 +84,12 @@
 		background-color: #ffffff;
 		color: rgba(255, 102, 51, 0.4);
 		border-color: rgba(255, 102, 51, 0.4);
+	}
+
+	.heading_container {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
 	}
 
 	.fileId {
