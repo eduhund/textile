@@ -1,4 +1,4 @@
-const { setTexts } = require("../../services/mongo/actions");
+const { getTexts, setTexts } = require("../../services/mongo/actions");
 
 /***
  * Receive data from Figma.
@@ -14,7 +14,16 @@ const { setTexts } = require("../../services/mongo/actions");
 async function pushData(req, res, next) {
 	try {
 		const { data } = req;
-		const { fileId, fileName, pageId, pageName, frames, variables } = data;
+		const { fileId, pluginId, fileName, pageId, pageName, frames, variables } = data;
+		const currentFile = await getTexts(data.fileId);
+		const pages = Object.keys(currentFile?.pages || {})
+
+		if (pages.length > 0 && pages[0] !== pageId && pluginId !== "xxx") {
+			const err = { code: 20101 };
+			next(err);
+			return
+		}
+
 		const setData = {
 			fileId,
 			fileName,

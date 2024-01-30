@@ -21,6 +21,11 @@ const ERRORS = [
 		description: "Invalid API key",
 	},
 	{
+		code: 20101,
+		type: "process_failure",
+		description: "You reach the page limit in this file",
+	},
+	{
 		code: 20201,
 		type: "process_failure",
 		description: "Error in echo process",
