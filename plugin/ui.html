@@ -6,11 +6,10 @@
 	<ol>
 		<li>Press "Push texts"</li>
 		<li>Send the file ID to your co-worker (click on it to copy)</li>
-		<li>Wait all the side work is done and press "Pull texts"</li>
+		<li>Wait until the editor deals with the texts, then press “Pull texts”</li>
 	</ol>
 	<em
-		>Please try not to work with text frames until you return the texts to the
-		project. If you replace them, new data may not be merged correctly.</em
+		>Make sure you don’t edit the text frames until you return the changed texts to the project. If you replace the frames, the new data may not be merged correctly.</em
 	>
 	<p class="fileId">
 		File ID: <span id="fileId" onclick="onIdClick(event)"></span>
@@ -23,6 +22,10 @@
 			Pull texts
 		</button>
 	</div>
+	<div class="bottom_section">
+		<span class="copyright">Created by <a href="https://eduhund.com">eduHund</a></span>
+	</div>
+	
 </body>
 
 <style>
@@ -102,6 +105,19 @@
 		font-family: monospace;
 		border-bottom: 1px solid dodgerblue;
 		cursor: pointer;
+	}
+
+	.bottom_section {
+		padding-top: 12px;
+		display: flex;
+		justify-content: center;
+	}
+
+	.copyright {
+		font-size: 12px;
+		text-align: center;
+
+		color: #726F6E
 	}
 </style>
 <script>
