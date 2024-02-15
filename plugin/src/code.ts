@@ -2,7 +2,48 @@ import { SECRET } from "../config"
 
 figma.showUI(__html__, { width: 270, height: 435 });
 
-const fileId = figma.fileKey;
+function generateRandomString(length: number) {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let randomString = '';
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    randomString += characters.charAt(randomIndex);
+  }
+
+  return randomString;
+}
+
+async function calculateSHA256(inputString: any) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(inputString);
+
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashString = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+  return hashString;
+}
+
+function createFileId() {
+	const string = generateRandomString(16)
+	const varColl = figma.variables.getLocalVariableCollections().find((item) => item.name === "Textile") || figma.variables.createVariableCollection("Textile")
+	const newVariable = figma.variables.createVariable("textile_file_id", varColl?.id, "STRING")
+	const mode = Object.keys(newVariable.valuesByMode)[0]
+	newVariable.setValueForMode(mode, string)
+	return string
+}
+
+function getFileId() {
+	const variables = figma.variables.getLocalVariables("STRING")
+	const IdVariable = variables.find((item) => item.name === "textile_file_id")
+	const fileId: any = Object.values(IdVariable?.valuesByMode || {})[0] || createFileId()
+	return fileId
+}
+
+
+const fileId = getFileId();
 
 async function createCommentBadge(id: number) {
 	const indicator = figma.createText();
